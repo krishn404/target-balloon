@@ -52,3 +52,11 @@ a:hover, a:focus, #youtube-link:hover, #youtube-link:focus {
   text-decoration: none;
   z-index: 2;
 }
+#score {
+  color: white;
+  font-family: 'Rubik', sans-serif;
+  font-size: 18px;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+}
