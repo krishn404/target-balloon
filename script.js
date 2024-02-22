@@ -465,7 +465,7 @@ const Balloon = {
       if(b.id === balloon.id && b.poppedAt === null) {
         b.poppedAt = poppedAt;
         // Check if the balloon color is red and update the score accordingly
-        if (b.color.toLowerCase() === 'red') {
+        if (b.color.toLowerCase() === '239, 83, 80') {
           Score.update(-2); // Decrease score by 2 if the balloon is red
         } else {
           Score.update(5); // Increase score by 5 for other colored balloons
