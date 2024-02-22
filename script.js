@@ -455,6 +455,7 @@ const Balloon = {
     
     return path;
   },
+  //Balloon Pop 
   pop: (balloon, poppedAt) => {
     Splatter.generate(balloon.color);
     
@@ -463,11 +464,19 @@ const Balloon = {
     State.balloons = State.balloons.map(b => {
       if(b.id === balloon.id && b.poppedAt === null) {
         b.poppedAt = poppedAt;
+        // Check if the balloon color is red and update the score accordingly
+        if (b.color.toLowerCase() === 'red') {
+          Score.update(-2); // Decrease score by 2 if the balloon is red
+        } else {
+          Score.update(5); // Increase score by 5 for other colored balloons
+        }
       }
       
       return b;
     });
   },
+  
+
   release: () => {
     const { height, width } = State.context.canvas,
           { balloon: params } = State.params; 
@@ -549,3 +558,21 @@ window.onmousemove = e => {
 window.onmousedown = () => {
   State.timestamps.clickAt = new Date().getTime();
 }
+
+// Initialize the score
+const Score = {
+  init: () => {
+    State.score = 0; // Initialize score to 0
+    const scoreElement = document.getElementById('score-value');
+    scoreElement.textContent = State.score.toString(); // Update score display
+  },
+  // Update the score by a specified amount
+  update: (amount) => {
+    State.score += amount;
+    const scoreElement = document.getElementById('score-value');
+    scoreElement.textContent = State.score.toString();
+  }
+};
+
+// Initialize the score when the script is loaded
+Score.init();
