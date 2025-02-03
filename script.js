@@ -470,7 +470,7 @@ const Balloon = {
         
         switch(b.color.toLowerCase()) {
           case '239, 83, 80': // Red
-            Score.update(-5);
+            Score.reset();
             break;
           case '253, 216, 53': // Yellow
             Score.update(10);
@@ -600,6 +600,11 @@ const Score = {
     State.score += amount;
     const scoreElement = document.getElementById('score-value');
     scoreElement.textContent = State.score.toString();
+  },
+  reset: () => {
+    State.score = 0;
+    const scoreElement = document.getElementById('score-value');
+    scoreElement.textContent = '0';
   }
 };
 
