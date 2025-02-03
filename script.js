@@ -3,24 +3,18 @@ const Color = {
   Steel: "96, 125, 139",
   
   Red: "239, 83, 80",
-  Orange: "255, 160, 0",
   Yellow: "253, 216, 53",
   Green: "42, 252, 152",
-  Blue: "41, 121, 255",
-  Indigo: "57, 73, 171",
-  Violet: "103, 58, 183"
+  Blue: "41, 121, 255"
 }
 
 const State = {
   balloons: [],
   colors: [
     Color.Red, 
-    Color.Orange, 
     Color.Yellow, 
     Color.Green, 
-    Color.Blue, 
-    Color.Indigo, 
-    Color.Violet
+    Color.Blue
   ],
   context: null,
   index: 0,
@@ -72,7 +66,10 @@ const Mapper = {
       duration: N.rand(3000, 7000),
       id: Math.random(),
       poppedAt: null,
-      position: Mapper.position(N.rand(width / 2, canvas.width - (width / 2)), canvas.height + height)
+      position: Mapper.position(
+        N.rand(width / 2, canvas.width - (width / 2)), 
+        canvas.height + height
+      )
     }
   },
   circle: (position, color, fill, radius, thickness, angle) => ({
@@ -434,10 +431,11 @@ const Balloon = {
   generate: () => {
     const { colors } = State,
           { frequency } = State.params.balloon;
-          
-    const color = State.colors[State.index++ % colors.length];
     
     const animate = () => {
+      const randomIndex = Math.floor(Math.random() * colors.length);
+      const color = colors[randomIndex];
+      
       State.balloons.push(Mapper.balloon(color));
       setTimeout(() => requestAnimationFrame(animate), frequency);
     }
@@ -469,10 +467,20 @@ const Balloon = {
     State.balloons = State.balloons.map(b => {
       if(b.id === balloon.id && b.poppedAt === null) {
         b.poppedAt = poppedAt;
-        if (b.color.toLowerCase() === '239, 83, 80') {
-          Score.update(-2);
-        } else {
-          Score.update(5);
+        
+        switch(b.color.toLowerCase()) {
+          case '239, 83, 80': // Red
+            Score.update(-5);
+            break;
+          case '253, 216, 53': // Yellow
+            Score.update(10);
+            break;
+          case '42, 252, 152': // Green
+            Score.update(2);
+            break;
+          case '41, 121, 255': // Blue
+            Score.update(5);
+            break;
         }
       }
       
@@ -546,6 +554,14 @@ const App = {
   }
 }
 
+window.addEventListener('online', function() {
+  console.log('Game is online');
+});
+
+window.addEventListener('offline', function() {
+  console.log('Game is offline');
+});
+
 window.onload = () => {  
   State.context = document.getElementById("canvas").getContext("2d");
   
@@ -554,6 +570,14 @@ window.onload = () => {
   Balloon.generate();
   
   State.position = Mapper.position(State.context.canvas.width / 2, State.context.canvas.height / 2);
+  
+  // Check if app is installed
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    // Optionally, show your own install button here
+  });
 }
 
 window.onmousemove = e => {
