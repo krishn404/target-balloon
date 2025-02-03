@@ -1,16 +1,24 @@
 html, body {
   background-color: rgb(20, 20, 20);
-  height: 100vh;
-  margin: 0px;
+  height: 100%;
+  margin: 0;
   overflow: hidden;
-  padding: 0px;
-  width: 100vw;
+  padding: 0;
+  width: 100%;
+  position: fixed; /* Prevent bounce on mobile */
+  touch-action: none; /* Disable browser touch actions */
+  -webkit-touch-callout: none; /* Disable callout */
+  -webkit-user-select: none; /* Disable selection */
+  -webkit-tap-highlight-color: transparent; /* Remove tap highlight */
 }
 
 #canvas {
   cursor: none;
-  height: 100vh;
-  width: 100vw;
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 a, h1 {
@@ -51,12 +59,28 @@ a:hover, a:focus, #youtube-link:hover, #youtube-link:focus {
   text-align: center;
   text-decoration: none;
   z-index: 2;
+  font-size: clamp(14px, 3vw, 16px);
+  padding: clamp(8px, 2vw, 15px);
+  margin: clamp(10px, 2vw, 20px);
 }
+
 #score {
   color: white;
   font-family: 'Rubik', sans-serif;
-  font-size: 18px;
+  font-size: clamp(16px, 4vw, 24px); /* Responsive font size */
   position: absolute;
   top: 20px;
   left: 20px;
+  z-index: 10;
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  #inspiration-link {
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
 }

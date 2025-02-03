@@ -98,18 +98,21 @@ const Canvas = {
   draw: () => {
     const { context } = State;
     
-    const height = context.canvas.clientHeight,
-          width = context.canvas.clientWidth;
-
-    context.canvas.height = height;
-    context.canvas.width = width;   
+    if (context.canvas.height !== context.canvas.clientHeight ||
+        context.canvas.width !== context.canvas.clientWidth) {
+      
+      context.canvas.height = context.canvas.clientHeight;
+      context.canvas.width = context.canvas.clientWidth;   
+      
+      const size = 4,
+            factor = Math.min(context.canvas.width, context.canvas.height) / 1000;
+      
+      State.params.balloon.size = N.clamp(2, size * factor, 4);
+      
+      State.params.balloon.frequency = Math.max(400, 600 * (1 / factor));
+    }
     
-    const size = 4,
-          factor = width / 2000;
-    
-    State.params.balloon.size = N.clamp(2, size * factor, 4);
-    
-    State.context.clearRect(0, 0, width, height);
+    context.clearRect(0, 0, context.canvas.width, context.canvas.height);
   },
   circle: params => {
     const { context } = State;
@@ -434,9 +437,12 @@ const Balloon = {
           
     const color = State.colors[State.index++ % colors.length];
     
-    State.balloons.push(Mapper.balloon(color));
+    const animate = () => {
+      State.balloons.push(Mapper.balloon(color));
+      setTimeout(() => requestAnimationFrame(animate), frequency);
+    }
     
-    setTimeout(() => requestAnimationFrame(Balloon.generate), frequency);
+    requestAnimationFrame(animate);
   },
   knot: (size, position) => {   
     const { context } = State,
@@ -455,7 +461,6 @@ const Balloon = {
     
     return path;
   },
-  //Balloon Pop 
   pop: (balloon, poppedAt) => {
     Splatter.generate(balloon.color);
     
@@ -464,19 +469,16 @@ const Balloon = {
     State.balloons = State.balloons.map(b => {
       if(b.id === balloon.id && b.poppedAt === null) {
         b.poppedAt = poppedAt;
-        // Check if the balloon color is red and update the score accordingly
         if (b.color.toLowerCase() === '239, 83, 80') {
-          Score.update(-2); // Decrease score by 2 if the balloon is red
+          Score.update(-2);
         } else {
-          Score.update(5); // Increase score by 5 for other colored balloons
+          Score.update(5);
         }
       }
       
       return b;
     });
   },
-  
-
   release: () => {
     const { height, width } = State.context.canvas,
           { balloon: params } = State.params; 
@@ -484,10 +486,14 @@ const Balloon = {
     State.balloons = Balloon.filter();
     
     for(let balloon of State.balloons) {
-      const y = Animate.value(balloon.position.y, params.size * 100 * -1, balloon.duration, balloon.createdAt);
+      const progress = (new Date().getTime() - balloon.createdAt) / balloon.duration;
+      const ease = 1 - Math.pow(1 - progress, 3);
+      
+      const startY = balloon.position.y;
+      const endY = params.size * 100 * -1;
+      const y = startY + (endY - startY) * ease;
       
       const position = { ...balloon.position, y };
-      
       Balloon.draw({ ...balloon, position });
     }
   },
@@ -562,11 +568,10 @@ window.onmousedown = () => {
 // Initialize the score
 const Score = {
   init: () => {
-    State.score = 0; // Initialize score to 0
+    State.score = 0;
     const scoreElement = document.getElementById('score-value');
-    scoreElement.textContent = State.score.toString(); // Update score display
+    scoreElement.textContent = State.score.toString();
   },
-  // Update the score by a specified amount
   update: (amount) => {
     State.score += amount;
     const scoreElement = document.getElementById('score-value');
@@ -574,5 +579,21 @@ const Score = {
   }
 };
 
-// Initialize the score when the script is loaded
 Score.init();
+
+// Handle touch events
+window.ontouchstart = (e) => {
+  e.preventDefault();
+  State.timestamps.clickAt = new Date().getTime();
+  
+  const touch = e.touches[0];
+  State.position.x = touch.clientX;
+  State.position.y = touch.clientY;
+}
+
+window.ontouchmove = (e) => {
+  e.preventDefault();
+  const touch = e.touches[0];
+  State.position.x = touch.clientX;
+  State.position.y = touch.clientY;
+}
